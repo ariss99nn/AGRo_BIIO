@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'usuarios',
 ]
 
-
+AUTH_USER_MODEL = "usuarios.Usuario"
 
 
 MIDDLEWARE = [
