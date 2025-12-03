@@ -9,4 +9,5 @@ class Usuario(AbstractUser):
     es_empleado = models.BooleanField(default=False)
 
     def __str__(self):
+
         return self.username

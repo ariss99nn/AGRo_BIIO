@@ -11,24 +11,49 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from dotenv import load_dotenv
-import os
+from dotenv import load_dotenv # uando python-dotenv para cargar variables de entorno desde un archivo .env
+import os # Módulo os para acceder a las variables de entorno
+from datetime import timedelta # Módulo datetime para manejar duraciones de tiempo
 
-load_dotenv()
+
+load_dotenv() # Cargar las variables de entorno desde el archivo .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"  # URL para acceder a los archivos multimedia
+MEDIA_ROOT = BASE_DIR / "media" # Directorio donde se almacenan los archivos multimedia
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
+SECRET_KEY = os.getenv("SECRET_KEY") # Clave secreta para la aplicación Django desde las variables de entorno
+DEBUG = os.getenv("DEBUG") == "True" # Modo de depuración desde las variables de entorno
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",") # Hosts permitidos desde las variables de entorno
+
+
+
+# Definición de la configuración de Django REST Framework y Simple JWT
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+AUTH_USER_MODEL = "usuarios.Usuario" # Modelo de usuario personalizado
+
+
+# Configuración de Simple JWT
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv("JWT_ACCESS_MINUTES", 60))), # Tiempo de vida del token de acceso en este caso 60 minutos
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv("JWT_REFRESH_DAYS", 1))), # Tiempo de vida del token de refresco en este caso 1 día
+    'AUTH_HEADER_TYPES': ('Bearer',), # Tipo de encabezado de autorización
+}
+
+
+
 
 
 
@@ -41,16 +66,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'alertas',
-    'catalogo',
-    'cultivos',
-    'ia',
-    'maquinaria',
-    'operaciones',
-    'personal',
-    'reportes',
-    'usuarios',
+    'rest_framework', # Django REST Framework
+    'alertas', # App de alertas
+    'catalogo', # App de catálogo
+    'cultivos', # App de cultivos
+    'ia', # App de inteligencia artificial
+    'maquinaria', # App de maquinaria
+    'operaciones', # App de operaciones
+    'personal', # App de personal
+    'reportes', # App de reportes
+    'usuarios', # App de usuarios
 ]
 
 AUTH_USER_MODEL = "usuarios.Usuario"
@@ -90,10 +115,14 @@ WSGI_APPLICATION = 'agro_bio.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+
+
+# Configuración de la base de datos utilizando variables de entorno
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE"),
-        "NAME": os.getenv("DB_NAME"),
+        "ENGINE": os.getenv("DB_ENGINE"), # Motor de base de datos desde las variables de entorno
+        "NAME": os.getenv("DB_NAME"), # Nombre de la base de datos desde las variables de entorno
     }
 }
 
