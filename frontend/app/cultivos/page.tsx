@@ -17,7 +17,7 @@ export default function CultivosPage() {
     <div className="p-6 min-h-screen" style={{ backgroundColor: "#EEEEEE" }}>
       
       {/* Título y acción */}
-      <div className=" flex justify-evenly items-center align-middle mb-6 border-y-6 p-3 border-[#d88e16]">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold" style={{ color: "#3A4750" }}>
           Cultivos
         </h1>
@@ -26,7 +26,7 @@ export default function CultivosPage() {
         <Link
           href="/cultivos/nuevo"
           className="px-4 py-2 rounded text-white"
-          style={{ backgroundColor: "#F9A825" }}
+          style={{ backgroundColor: "#00A86B" }}
         >
           Nuevo
         </Link>
