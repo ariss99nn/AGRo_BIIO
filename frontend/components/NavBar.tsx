@@ -43,8 +43,8 @@ export default function Navbar() {
                 <button className="hover:text-amber-300">Cultivo</button>
                 {cultivoOpen && (
                   <div className="absolute bg-stone-50 text-slate-800 shadow rounded mt-2 w-40">
-                    <Link href="/cultivo/lista" className="block px-4 py-2 hover:bg-green-200">Lista de Cultivo</Link>
-                    <Link href="/cultivo/registrar" className="block px-4 py-2 hover:bg-green-200">Registrar Cultivo</Link>
+                    <Link href="/cultivos/nuevo" className="block px-4 py-2 hover:bg-green-200">Lista de Cultivo</Link>
+                    <Link href="app/cultivo/nuevo" className="block px-4 py-2 hover:bg-green-200">Registrar Cultivo</Link>
                   </div>
                 )}
               </div>
@@ -69,8 +69,8 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/about" className="hover:text-amber-300">About Us</Link>
-              <Link href="/login" className="hover:text-amber-300">Iniciar Sesión</Link>
-              <Link href="/register" className="hover:text-amber-300">Registrarse</Link>
+              <Link href="/auth/login" className="hover:text-amber-300">Iniciar Sesión</Link>
+              <Link href="/auth/register" className="hover:text-amber-300">Registrarse</Link>
             </>
           )}
         </div>

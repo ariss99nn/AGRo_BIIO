@@ -14,10 +14,10 @@ export default function CultivosPage() {
   }, []);
 
   return (
-    <div className="p-6 min-h-screen" style={{ backgroundColor: "#EEEEEE" }}>
+    <div className="p-6 min-h-screen" >
       
       {/* Título y acción */}
-      <div className=" flex justify-evenly items-center align-middle mb-6 border-y-6 p-3 border-[#d88e16]">
+      <div className=" flex justify-evenly rounded-2xl items-center align-middle mb-6 border-t-4 p-3 bg-[#ffffff6b] border-[#f7c627]">
         <h1 className="text-2xl font-semibold" style={{ color: "#3A4750" }}>
           Cultivos
         </h1>
