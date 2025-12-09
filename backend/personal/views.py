@@ -1,22 +1,37 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
+
 from django.http import Http404
 
 from .models import Personal
 from .serializers import PersonalSerializer
+from .filters import PersonalFilter
 
 
-# ---------------------------
-# LISTAR / CREAR PERSONAL
-# ---------------------------
+# -----PAGINACIÓN-----
+class PersonalPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
+
+# -----LISTAR / CREAR PERSONAL-----
 class PersonalListCreateView(APIView):
 
     def get(self, request):
-        personal = Personal.objects.all()
-        serializer = PersonalSerializer(personal, many=True)
-        return Response(serializer.data)
+        queryset = Personal.objects.all()
+
+        # APLICAR FILTROS
+        filtered_queryset = PersonalFilter(request.GET, queryset=queryset).qs
+
+        # PAGINACIÓN
+        paginator = PersonalPagination()
+        page = paginator.paginate_queryset(filtered_queryset, request)
+
+        serializer = PersonalSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = PersonalSerializer(data=request.data)
@@ -29,10 +44,7 @@ class PersonalListCreateView(APIView):
 
 
 
-# ---------------------------
-# DETALLE / EDITAR / BORRAR PERSONAL
-# ---------------------------
-
+# -----DETALLE / EDITAR / BORRAR PERSONAL-----
 class PersonalDetailView(APIView):
 
     def get_object(self, pk):
