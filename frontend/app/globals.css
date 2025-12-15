@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ============================================
+   TOKENS DE DISEÑO – AGRo_BIIO
+   Paleta: verde oliva, crema, terracota
+   ============================================ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+:root {
+  /* --- Colores principales --- */
+  --color-primary: #5C6B4A;       /* Verde oliva: acciones principales */
+  --color-primary-light: #7A8C66; /* Verde claro: hover */
+  --color-primary-dark: #3E4A32;  /* Verde oscuro: pressed */
+
+  --color-secondary: #C4A35A;     /* Terracota/dorado: acentos */
+  --color-secondary-light: #D4B97A;
+
+  /* --- Fondos y texto --- */
+  --color-bg: #FAF8F5;            /* Crema suave: fondo general */
+  --color-bg-card: #FFFFFF;       /* Blanco: tarjetas */
+  --color-bg-muted: #F0EDE8;      /* Crema oscuro: secciones */
+
+  --color-text: #2D2D2D;          /* Texto principal */
+  --color-text-muted: #6B6B6B;    /* Texto secundario */
+  --color-text-light: #9A9A9A;    /* Texto deshabilitado */
+
+  /* --- Estados --- */
+  --color-success: #4A7C59;       /* Verde éxito */
+  --color-warning: #D4A24C;       /* Amarillo advertencia */
+  --color-error: #C75D5D;         /* Rojo error */
+  --color-info: #5A7A9A;          /* Azul información */
+
+  /* --- Espaciados (escala de 4px) --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* --- Radios de borde --- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* --- Sombras suaves --- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+
+  /* --- Transiciones --- */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+
+  /* --- Tipografía --- */
+  --font-sans: 'Space Grotesk', system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
+/* --- Tema oscuro --- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-bg: #1A1A1A;
+    --color-bg-card: #252525;
+    --color-bg-muted: #2D2D2D;
+
+    --color-text: #EDEDED;
+    --color-text-muted: #A0A0A0;
+    --color-text-light: #6B6B6B;
+
+    --color-primary: #7A8C66;
+    --color-primary-light: #9AAA86;
+    --color-primary-dark: #5C6B4A;
   }
 }
 
+/* ============================================
+   ESTILOS BASE
+   ============================================ */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* --- Transiciones globales para interactividad --- */
+a, button {
+  transition: all var(--transition-fast);
+}
+
+/* --- Focus visible para accesibilidad --- */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
