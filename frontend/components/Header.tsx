@@ -59,11 +59,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Logo y nombre */}
         <a href="/" className="flex items-center gap-[var(--space-sm)]">
-          <span className="text-2xl">🌱</span>
-          <span className="text-lg font-bold text-[var(--color-primary)]">
-            AGRo_BIIO
-          </span>
-        </a>
+  <img
+    src="/favicon.png"
+    alt="AGRo_BIIO logo"
+    className="w-14 h-14"
+  />
+  <span className="text-lg font-bold text-[var(--color-primary)]">
+    AGRo_BIIO
+  </span>
+</a>
       </div>
 
       {/* Lado derecho: avatar usuario */}

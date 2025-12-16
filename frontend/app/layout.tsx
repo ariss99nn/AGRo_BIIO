@@ -25,6 +25,9 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "AGRo_BIIO – Gestión Agrícola",
   description: "Sistema de gestión agrícola inteligente",
+  icons: {
+    icon: '/favicon.png',
+  }
 };
 
 export default function RootLayout({
