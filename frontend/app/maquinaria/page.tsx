@@ -9,17 +9,10 @@
 
 import React, { useState } from 'react';
 import { Card, Button, Tag, Input, Empty } from '@/components/ui';
+import  maquinaria from '@/api/maquinaria.json';
 
 /* Datos de ejemplo para maquinaria */
-const maquinariaData = [
-  { id: 1, nombre: 'Tractor John Deere 6M', tipo: 'Tractor', modelo: 'JD-6120M', año: 2022, estado: 'disponible', horasUso: 1250, proximoMantenimiento: '2024-12-20', ubicacion: 'Galpón 1' },
-  { id: 2, nombre: 'Cosechadora Case IH', tipo: 'Cosechadora', modelo: 'AF-8250', año: 2021, estado: 'en_uso', horasUso: 890, proximoMantenimiento: '2024-12-15', ubicacion: 'Lote Este' },
-  { id: 3, nombre: 'Pulverizadora Jacto', tipo: 'Pulverizadora', modelo: 'Uniport 3030', año: 2023, estado: 'disponible', horasUso: 320, proximoMantenimiento: '2025-01-10', ubicacion: 'Galpón 2' },
-  { id: 4, nombre: 'Sembradora Agrometal', tipo: 'Sembradora', modelo: 'TX Mega 16', año: 2020, estado: 'mantenimiento', horasUso: 1850, proximoMantenimiento: '2024-12-10', ubicacion: 'Taller' },
-  { id: 5, nombre: 'Tractor New Holland', tipo: 'Tractor', modelo: 'T7.245', año: 2023, estado: 'disponible', horasUso: 450, proximoMantenimiento: '2025-02-01', ubicacion: 'Galpón 1' },
-  { id: 6, nombre: 'Mixer Mainero', tipo: 'Mixer', modelo: '2921', año: 2019, estado: 'en_uso', horasUso: 2100, proximoMantenimiento: '2024-12-18', ubicacion: 'Sector Ganadero' },
-];
-
+const maquinariaData = maquinaria;
 /* Estados disponibles */
 const estados = ['Todos', 'disponible', 'en_uso', 'mantenimiento'];
 const estadoLabels: Record<string, string> = {

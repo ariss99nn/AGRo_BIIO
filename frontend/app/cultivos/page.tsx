@@ -10,15 +10,12 @@
 import React, { useState } from 'react';
 import { Card, Button, Input, Tag, Empty } from '@/components/ui';
 import Link from 'next/link';
+import cultivos from '@/api/cultivos.json';
 
 /* Datos de ejemplo para cultivos */
-const cultivosData = [
-  { id: 1, nombre: 'Maíz - Lote Norte', variedad: 'Híbrido DK-7500', area: 25, unidad: 'ha', estado: 'crecimiento', progreso: 65, fechaSiembra: '2024-09-15' },
-  { id: 2, nombre: 'Soja - Lote Sur', variedad: 'Don Mario 4670', area: 40, unidad: 'ha', estado: 'floracion', progreso: 45, fechaSiembra: '2024-10-01' },
-  { id: 3, nombre: 'Trigo - Lote Este', variedad: 'Klein Proteo', area: 30, unidad: 'ha', estado: 'cosecha', progreso: 95, fechaSiembra: '2024-06-20' },
-  { id: 4, nombre: 'Girasol - Lote Oeste', variedad: 'Paraíso 20', area: 15, unidad: 'ha', estado: 'siembra', progreso: 10, fechaSiembra: '2024-11-10' },
-  { id: 5, nombre: 'Maíz - Lote Central', variedad: 'Pioneer P1234', area: 20, unidad: 'ha', estado: 'crecimiento', progreso: 50, fechaSiembra: '2024-09-25' },
-];
+
+const cultivosData = cultivos;
+
 
 /* Estados disponibles para filtrar */
 const estados = ['Todos', 'siembra', 'crecimiento', 'floracion', 'cosecha'];

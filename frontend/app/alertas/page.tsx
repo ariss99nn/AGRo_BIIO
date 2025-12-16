@@ -9,17 +9,10 @@
 
 import React, { useState } from 'react';
 import { Card, Button, Tag, Empty } from '@/components/ui';
+import alertas from '@/api/alerta.json';
 
 /* Datos de ejemplo para alertas */
-const alertasData = [
-  { id: 1, titulo: 'Nivel crítico de humedad en Lote Norte', tipo: 'cultivo', prioridad: 'critica', fecha: '2024-12-09 14:30', leida: false, descripcion: 'La humedad del suelo ha bajado al 15%. Se recomienda riego inmediato.' },
-  { id: 2, titulo: 'Mantenimiento programado: Tractor JD-6120M', tipo: 'maquinaria', prioridad: 'media', fecha: '2024-12-09 10:00', leida: false, descripcion: 'El tractor requiere mantenimiento preventivo. Fecha límite: 20/12/2024.' },
-  { id: 3, titulo: 'Stock bajo: Fertilizante NPK', tipo: 'inventario', prioridad: 'alta', fecha: '2024-12-08 16:45', leida: true, descripcion: 'El stock de fertilizante NPK está por debajo del mínimo. Quedan 50kg.' },
-  { id: 4, titulo: 'Pronóstico de heladas para mañana', tipo: 'clima', prioridad: 'critica', fecha: '2024-12-09 08:00', leida: false, descripcion: 'Se pronostican heladas para mañana a las 5:00 AM. Temperatura mínima: -2°C.' },
-  { id: 5, titulo: 'Plaga detectada en cultivo de soja', tipo: 'cultivo', prioridad: 'alta', fecha: '2024-12-07 11:30', leida: true, descripcion: 'Se detectó presencia de chinche en el Lote Sur. Revisar y aplicar tratamiento.' },
-  { id: 6, titulo: 'Licencia de operador próxima a vencer', tipo: 'personal', prioridad: 'baja', fecha: '2024-12-06 09:00', leida: true, descripcion: 'La licencia de Juan Pérez vence en 30 días. Programar renovación.' },
-  { id: 7, titulo: 'Cosecha lista en Lote Este', tipo: 'cultivo', prioridad: 'media', fecha: '2024-12-09 07:00', leida: false, descripcion: 'El trigo en Lote Este ha alcanzado madurez óptima para cosecha.' },
-];
+const alertasData = alertas
 
 /* Tipos de alerta */
 const tipos = ['Todas', 'cultivo', 'maquinaria', 'inventario', 'clima', 'personal'];

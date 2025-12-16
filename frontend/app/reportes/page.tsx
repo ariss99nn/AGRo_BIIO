@@ -9,16 +9,10 @@
 
 import React, { useState } from 'react';
 import { Card, Button, Tag, Input } from '@/components/ui';
+import reportes from '@/api/reporte.json';
 
 /* Tipos de reportes disponibles */
-const tiposReporte = [
-  { id: 'produccion', nombre: 'Producción', icono: '🌾', descripcion: 'Rendimiento y volúmenes de cosecha' },
-  { id: 'operaciones', nombre: 'Operaciones', icono: '⚙️', descripcion: 'Actividades y tareas realizadas' },
-  { id: 'maquinaria', nombre: 'Maquinaria', icono: '🚜', descripcion: 'Uso y mantenimiento de equipos' },
-  { id: 'inventario', nombre: 'Inventario', icono: '📦', descripcion: 'Stock y movimientos de insumos' },
-  { id: 'personal', nombre: 'Personal', icono: '👷', descripcion: 'Horas trabajadas y asignaciones' },
-  { id: 'financiero', nombre: 'Financiero', icono: '💰', descripcion: 'Costos, ingresos y rentabilidad' },
-];
+const tiposReporte = reportes
 
 /* Presets guardados */
 const presetsGuardados = [
