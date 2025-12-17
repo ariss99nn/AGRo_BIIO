@@ -1,0 +1,198 @@
+<!-- templates/catalogos/lista.html -->
+{% extends 'catalogos/base.html' %}
+
+{% block title %}{{ titulo }} - Catálogo AgroBio{% endblock %}
+
+{% block icon %}{{ icono }}{% endblock %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block page_subtitle %}{{ subtitulo }}{% endblock %}
+
+{% block page_actions %}
+{% if crear_url %}
+<a href="{{ crear_url }}" class="btn btn-primary">
+    <i class="bi bi-plus-circle me-1"></i> Nuevo
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+{% if filtros %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            {% for filtro in filtros %}
+            <div class="col-md-3">
+                <label class="form-label">{{ filtro.label }}</label>
+                {{ filtro.widget }}
+            </div>
+            {% endfor %}
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i> Filtrar
+                </button>
+            </div>
+            {% if request.GET %}
+            <div class="col-md-3 d-flex align-items-end">
+                <a href="." class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-x-circle me-1"></i> Limpiar
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Contador -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <span class="text-muted">Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros</span>
+    </div>
+    {% if exportar_url %}
+    <div>
+        <a href="{{ exportar_url }}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-download me-1"></i> Exportar
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tabla -->
+<div class="card">
+    <div class="card-body">
+        {% if object_list %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        {% for columna in columnas %}
+                        <th>{{ columna.titulo }}</th>
+                        {% endfor %}
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for objeto in object_list %}
+                    <tr>
+                        {% for columna in columnas %}
+                        <td>
+                            {% if columna.tipo == 'texto' %}
+                                {{ objeto|get_attribute:columna.campo|default:"-"|truncatechars:50 }}
+                            
+                            {% elif columna.tipo == 'badge' %}
+                                <span class="badge bg-{{ objeto|get_attribute:columna.color|default:'secondary' }}">
+                                    {{ objeto|get_attribute:columna.campo }}
+                                </span>
+                            
+                            {% elif columna.tipo == 'estado_stock' %}
+                                {% with stock=objeto.stock minimo=objeto.stock_minimo %}
+                                    {% if stock == 0 %}
+                                    <span class="badge bg-danger">Agotado</span>
+                                    {% elif stock <= minimo %}
+                                    <span class="badge bg-warning">Bajo Stock</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Normal</span>
+                                    {% endif %}
+                                {% endwith %}
+                            
+                            {% elif columna.tipo == 'fecha' %}
+                                {{ objeto|get_attribute:columna.campo|date:"d/m/Y" }}
+                            
+                            {% elif columna.tipo == 'numero' %}
+                                {{ objeto|get_attribute:columna.campo|default:0|floatformat:2 }}
+                            
+                            {% elif columna.tipo == 'acciones' %}
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url detalle_url objeto.id %}" class="btn btn-outline-info" title="Ver">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url editar_url objeto.id %}" class="btn btn-outline-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url eliminar_url objeto.id %}" class="btn btn-outline-danger btn-delete" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            
+                            {% else %}
+                                {{ objeto|get_attribute:columna.campo|default:"-" }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        
+                        <!-- Acciones generales -->
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url detalle_url objeto.id %}" class="btn btn-outline-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url editar_url objeto.id %}" class="btn btn-outline-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url eliminar_url objeto.id %}" class="btn btn-outline-danger btn-delete" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        {% if is_paginated %}
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <!-- Sin resultados -->
+        <div class="text-center py-5">
+            <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+            <h4 class="text-muted mb-3">No hay registros</h4>
+            <p class="text-muted mb-4">No se encontraron resultados para tu búsqueda</p>
+            {% if crear_url %}
+            <a href="{{ crear_url }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Crear el primero
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

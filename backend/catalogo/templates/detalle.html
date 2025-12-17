@@ -1,0 +1,193 @@
+<!-- templates/catalogos/detalle.html -->
+{% extends 'catalogos/base.html' %}
+
+{% block title %}{{ objeto.nombre|default:objeto }} - Catálogo AgroBio{% endblock %}
+
+{% block icon %}{{ icono }}{% endblock %}
+
+{% block page_title %}{{ objeto.nombre|default:objeto }}{% endblock %}
+
+{% block page_subtitle %}{{ subtitulo }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url editar_url objeto.id %}" class="btn btn-warning">
+        <i class="bi bi-pencil me-1"></i> Editar
+    </a>
+    <a href="{% url eliminar_url objeto.id %}" class="btn btn-danger">
+        <i class="bi bi-trash me-1"></i> Eliminar
+    </a>
+    <a href="{% url listar_url %}" class="btn btn-outline-secondary">
+        <i class="bi bi-list-ul me-1"></i> Volver a la lista
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Información principal -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    {% for campo in campos %}
+                    <div class="col-md-{% if campo.ancho %}{{ campo.ancho }}{% else %}6{% endif %} mb-3">
+                        <label class="form-label text-muted small mb-1">{{ campo.label }}</label>
+                        <p class="mb-0">
+                            {% if campo.tipo == 'texto' %}
+                                {{ objeto|get_attribute:campo.nombre|default:"-"|linebreaks }}
+                            
+                            {% elif campo.tipo == 'badge' %}
+                                <span class="badge bg-{{ campo.color|default:'secondary' }}">
+                                    {{ objeto|get_attribute:campo.nombre }}
+                                </span>
+                            
+                            {% elif campo.tipo == 'fecha' %}
+                                {{ objeto|get_attribute:campo.nombre|date:"d/m/Y H:i" }}
+                            
+                            {% elif campo.tipo == 'numero' %}
+                                {{ objeto|get_attribute:campo.nombre|default:0|floatformat:2 }}
+                            
+                            {% elif campo.tipo == 'estado_stock' %}
+                                {% with stock=objeto.stock minimo=objeto.stock_minimo %}
+                                    {% if stock == 0 %}
+                                    <span class="badge bg-danger">Agotado ({{ stock }})</span>
+                                    {% elif stock <= minimo %}
+                                    <span class="badge bg-warning">Bajo Stock ({{ stock }}/{{ minimo }})</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Normal ({{ stock }})</span>
+                                    {% endif %}
+                                {% endwith %}
+                            
+                            {% elif campo.tipo == 'imagen' %}
+                                {% with imagen=objeto|get_attribute:campo.nombre %}
+                                    {% if imagen %}
+                                    <img src="{{ imagen.url }}" alt="{{ objeto.nombre }}" 
+                                         class="img-fluid rounded" style="max-height: 200px;">
+                                    {% else %}
+                                    <span class="text-muted">Sin imagen</span>
+                                    {% endif %}
+                                {% endwith %}
+                            
+                            {% else %}
+                                {{ objeto|get_attribute:campo.nombre|default:"-" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Información adicional -->
+                {% if informacion_adicional %}
+                <div class="mt-4 pt-4 border-top">
+                    <h6 class="mb-3">Información Adicional</h6>
+                    {{ informacion_adicional|safe }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Relaciones -->
+        {% if relaciones %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ relaciones.titulo }}</h5>
+            </div>
+            <div class="card-body">
+                {% if relaciones.items %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                {% for columna in relaciones.columnas %}
+                                <th>{{ columna }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in relaciones.items %}
+                            <tr>
+                                {% for valor in item %}
+                                <td>{{ valor }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-info-circle display-4"></i>
+                    <p class="mt-3">No hay {{ relaciones.titulo|lower }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Estadísticas -->
+        {% if estadisticas %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Estadísticas</h6>
+            </div>
+            <div class="card-body">
+                {% for estadistica in estadisticas %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">{{ estadistica.label }}</span>
+                    <strong>{{ estadistica.valor }}</strong>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Acciones rápidas -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Acciones Rápidas</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% for accion in acciones_rapidas %}
+                    <a href="{{ accion.url }}" class="btn btn-outline-{{ accion.color }}">
+                        <i class="bi bi-{{ accion.icono }} me-2"></i>
+                        {{ accion.texto }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del sistema -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Información del Sistema</h6>
+            </div>
+            <div class="card-body">
+                <div class="small text-muted">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>ID:</span>
+                        <strong>#{{ objeto.id }}</strong>
+                    </div>
+                    {% if objeto.fecha_creacion %}
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Creado:</span>
+                        <span>{{ objeto.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% endif %}
+                    {% if objeto.fecha_actualizacion %}
+                    <div class="d-flex justify-content-between">
+                        <span>Actualizado:</span>
+                        <span>{{ objeto.fecha_actualizacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+<!-- templates/catalogos/formulario.html -->
+{% extends 'catalogos/base.html' %}
+
+{% block title %}{{ titulo }} - Catálogo AgroBio{% endblock %}
+
+{% block icon %}{{ icono }}{% endblock %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block page_subtitle %}{{ subtitulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+                    {% csrf_token %}
+                    
+                    <!-- Errores generales -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Campos del formulario -->
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        
+                        {% if field.field.widget.input_type == 'select' %}
+                            <select name="{{ field.name }}" id="{{ field.id_for_label }}" 
+                                    class="form-select {% if field.errors %}is-invalid{% endif %}">
+                                {% for value, label in field.field.choices %}
+                                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        
+                        {% elif field.field.widget.input_type == 'textarea' %}
+                            <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" 
+                                      class="form-control {% if field.errors %}is-invalid{% endif %}" 
+                                      rows="3">{{ field.value|default:'' }}</textarea>
+                        
+                        {% elif field.field.widget.input_type == 'file' %}
+                            <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                                   class="form-control {% if field.errors %}is-invalid{% endif %}">
+                            
+                            {% if field.value %}
+                            <div class="mt-2">
+                                <small class="text-muted">Archivo actual:</small>
+                                <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+                            </div>
+                            {% endif %}
+                        
+                        {% else %}
+                            <input type="{{ field.field.widget.input_type }}" 
+                                   name="{{ field.name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   value="{{ field.value|default:'' }}"
+                                   class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                   {% if field.field.max_length %}maxlength="{{ field.field.max_length }}"{% endif %}
+                                   {% if field.field.required %}required{% endif %}>
+                        {% endif %}
+                        
+                        <!-- Errores del campo -->
+                        {% if field.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in field.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Texto de ayuda -->
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url listar_url %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {{ accion_boton }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
