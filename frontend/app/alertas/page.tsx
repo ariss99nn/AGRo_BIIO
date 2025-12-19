@@ -7,14 +7,20 @@
 
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Button, Tag, Empty } from '@/components/ui';
-import alertas from '@/api/alerta.json';
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Tag, Empty, Input } from '@/components/ui';
 
-/* Datos de ejemplo para alertas */
-const alertasData = alertas
+interface Alerta {
+  id: number;
+  tipo: string;
+  prioridad: 'critica' | 'alta' | 'media' | 'baja';
+  leida: boolean;
+  fecha: string;
+  titulo: string;
+  descripcion: string;
+}
 
-/* Tipos de alerta */
+/* Tipos de alerta (UI) */
 const tipos = ['Todas', 'cultivo', 'maquinaria', 'inventario', 'clima', 'personal'];
 const tipoLabels: Record<string, string> = {
   cultivo: 'Cultivo',
@@ -41,169 +47,175 @@ const prioridadLabels: Record<string, string> = {
 };
 
 export default function AlertasPage() {
+  /* =========================
+     STATE
+     ========================= */
+  const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [tipoFiltro, setTipoFiltro] = useState('Todas');
   const [prioridadFiltro, setPrioridadFiltro] = useState('Todas');
   const [soloNoLeidas, setSoloNoLeidas] = useState(false);
+  const [mostrarForm, setMostrarForm] = useState(false);
 
-  /* Filtrar alertas */
-  const alertasFiltradas = alertasData.filter((alerta) => {
+  /* Form POST según body real */
+  const [form, setForm] = useState({
+    tipo: 'STOCK_LOW',
+    target_type: 'INSUMO',
+    target_id: '',
+    min_stock: '',
+    mensaje_template: '',
+    activo: true,
+  });
+
+  const API_URL = 'http://localhost:8000/api/alertas';
+
+  /* =========================
+     GET ALERTAS
+     ========================= */
+  const cargarAlertas = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      setAlertas(data);
+    } catch (error) {
+      console.error('Error cargando alertas', error);
+    }
+  };
+
+  useEffect(() => {
+    cargarAlertas();
+  }, []);
+
+  /* =========================
+     POST ALERTA
+     ========================= */
+  const crearAlerta = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      tipo: form.tipo,
+      target_type: form.target_type,
+      target_id: Number(form.target_id),
+      parametros: {
+        min_stock: Number(form.min_stock),
+      },
+      mensaje_template: form.mensaje_template,
+      activo: form.activo,
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error();
+
+      alert('Alerta creada correctamente');
+      setMostrarForm(false);
+      cargarAlertas();
+    } catch {
+      alert('Error al crear la alerta');
+    }
+  };
+
+  /* =========================
+     FILTROS
+     ========================= */
+  const alertasFiltradas = alertas.filter((alerta) => {
     const coincideTipo = tipoFiltro === 'Todas' || alerta.tipo === tipoFiltro;
     const coincidePrioridad = prioridadFiltro === 'Todas' || alerta.prioridad === prioridadFiltro;
     const coincideLeida = !soloNoLeidas || !alerta.leida;
     return coincideTipo && coincidePrioridad && coincideLeida;
   });
 
-  /* Mapeo de prioridad a variante de Tag */
-  const prioridadVariant: Record<string, 'error' | 'warning' | 'info' | 'neutral'> = {
+  /* =========================
+     KPIs
+     ========================= */
+  const kpis = {
+    total: alertas.length,
+    noLeidas: alertas.filter(a => !a.leida).length,
+    criticas: alertas.filter(a => a.prioridad === 'critica').length,
+    hoy: alertas.filter(a => a.fecha?.startsWith(new Date().toISOString().slice(0, 10))).length,
+  };
+
+  const prioridadVariant: Record<'critica' | 'alta' | 'media' | 'baja', 'error' | 'warning' | 'info' | 'neutral'> = {
     critica: 'error',
     alta: 'warning',
     media: 'info',
     baja: 'neutral',
   };
 
-  /* KPIs */
-  const kpis = {
-    total: alertasData.length,
-    noLeidas: alertasData.filter(a => !a.leida).length,
-    criticas: alertasData.filter(a => a.prioridad === 'critica').length,
-    hoy: alertasData.filter(a => a.fecha.startsWith('2024-12-09')).length,
-  };
-
+  /* =========================
+     RENDER
+     ========================= */
   return (
     <div className="space-y-[var(--space-lg)]">
-      {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--space-md)]">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
-          🔔 Centro de Alertas
-        </h1>
-        <Button variant="outline">Marcar todas como leídas</Button>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">🔔 Centro de Alertas</h1>
+        <Button variant="primary" onClick={() => setMostrarForm(!mostrarForm)}>
+          + Crear alerta
+        </Button>
       </div>
 
       {/* KPIs */}
       <div className="grid gap-[var(--space-md)] grid-cols-2 lg:grid-cols-4">
         <Card padding="sm">
-          <p className="text-3xl font-bold text-[var(--color-primary)]">{kpis.total}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Total alertas</p>
+          <p className="text-3xl font-bold">{kpis.total}</p>
+          <p>Total alertas</p>
         </Card>
         <Card padding="sm">
-          <p className="text-3xl font-bold text-[var(--color-info)]">{kpis.noLeidas}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Sin leer</p>
+          <p className="text-3xl font-bold">{kpis.noLeidas}</p>
+          <p>Sin leer</p>
         </Card>
         <Card padding="sm">
-          <p className="text-3xl font-bold text-[var(--color-error)]">{kpis.criticas}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Críticas</p>
+          <p className="text-3xl font-bold">{kpis.criticas}</p>
+          <p>Críticas</p>
         </Card>
         <Card padding="sm">
-          <p className="text-3xl font-bold text-[var(--color-secondary)]">{kpis.hoy}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Hoy</p>
+          <p className="text-3xl font-bold">{kpis.hoy}</p>
+          <p>Hoy</p>
         </Card>
       </div>
 
       {/* Filtros */}
       <Card padding="md">
         <div className="flex flex-col lg:flex-row gap-[var(--space-md)]">
-          {/* Filtro por tipo */}
           <div className="flex flex-wrap gap-[var(--space-sm)]">
             {tipos.map((tipo) => (
               <button
                 key={tipo}
                 onClick={() => setTipoFiltro(tipo)}
-                className={`
-                  px-3 py-1.5 rounded-[var(--radius-full)] text-sm font-medium
-                  transition-colors duration-[var(--transition-fast)]
-                  ${tipoFiltro === tipo
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)] hover:text-white'
-                  }
+                className={`px-3 py-1.5 rounded-full text-sm
+                  ${tipoFiltro === tipo ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-bg-muted)]'}
                 `}
               >
                 {tipo === 'Todas' ? 'Todas' : `${tipoIconos[tipo]} ${tipoLabels[tipo]}`}
               </button>
             ))}
           </div>
-
-          {/* Filtro por prioridad */}
-          <div className="flex flex-wrap gap-[var(--space-sm)]">
-            {prioridades.map((prio) => (
-              <button
-                key={prio}
-                onClick={() => setPrioridadFiltro(prio)}
-                className={`
-                  px-3 py-1.5 rounded-[var(--radius-full)] text-sm font-medium
-                  transition-colors duration-[var(--transition-fast)]
-                  ${prioridadFiltro === prio
-                    ? 'bg-[var(--color-secondary)] text-white'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-secondary-light)] hover:text-white'
-                  }
-                `}
-              >
-                {prio === 'Todas' ? 'Prioridad' : prioridadLabels[prio]}
-              </button>
-            ))}
-          </div>
-
-          {/* Toggle solo no leídas */}
-          <label className="flex items-center gap-[var(--space-sm)] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={soloNoLeidas}
-              onChange={(e) => setSoloNoLeidas(e.target.checked)}
-              className="w-4 h-4 rounded border-[var(--color-bg-muted)]"
-            />
-            <span className="text-sm text-[var(--color-text-muted)]">Solo no leídas</span>
-          </label>
         </div>
       </Card>
 
-      {/* Lista de alertas */}
+      {/* Lista */}
       {alertasFiltradas.length === 0 ? (
-        <Empty
-          icon="🔔"
-          title="Sin alertas"
-          message="No hay alertas con los filtros seleccionados."
-          action={<Button variant="outline" onClick={() => { setTipoFiltro('Todas'); setPrioridadFiltro('Todas'); setSoloNoLeidas(false); }}>Limpiar filtros</Button>}
-        />
+        <Empty icon="🔔" title="Sin alertas" />
       ) : (
         <div className="space-y-[var(--space-md)]">
           {alertasFiltradas.map((alerta) => (
-            <Card
-              key={alerta.id}
-              className={`
-                transition-all duration-[var(--transition-fast)]
-                ${!alerta.leida ? 'border-l-4 border-l-[var(--color-primary)]' : ''}
-                hover:shadow-[var(--shadow-lg)]
-              `}
-            >
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-[var(--space-md)]">
-                <div className="flex-1">
-                  {/* Cabecera de alerta */}
-                  <div className="flex items-center gap-[var(--space-sm)] mb-[var(--space-sm)]">
-                    <span className="text-xl">{tipoIconos[alerta.tipo]}</span>
-                    <Tag variant={prioridadVariant[alerta.prioridad]}>{prioridadLabels[alerta.prioridad]}</Tag>
-                    <Tag variant="neutral">{tipoLabels[alerta.tipo]}</Tag>
-                    {!alerta.leida && (
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-                    )}
+            <Card key={alerta.id} className={!alerta.leida ? 'border-l-4 border-l-[var(--color-primary)]' : ''}>
+              <div className="flex justify-between">
+                <div>
+                  <div className="flex gap-2 mb-1">
+                    <Tag variant={prioridadVariant[alerta.prioridad]}>
+                      {prioridadLabels[alerta.prioridad]}
+                    </Tag>
+                    <Tag variant="neutral">{alerta.tipo}</Tag>
                   </div>
-
-                  {/* Título y descripción */}
-                  <h3 className={`text-lg font-semibold mb-[var(--space-xs)] ${!alerta.leida ? 'text-[var(--color-text)]' : 'text-[var(--color-text-muted)]'}`}>
-                    {alerta.titulo}
-                  </h3>
+                  <h3 className="font-semibold">{alerta.titulo}</h3>
                   <p className="text-sm text-[var(--color-text-muted)]">{alerta.descripcion}</p>
-
-                  {/* Fecha */}
-                  <p className="text-xs text-[var(--color-text-light)] mt-[var(--space-sm)]">
-                    {alerta.fecha}
-                  </p>
-                </div>
-
-                {/* Acciones */}
-                <div className="flex gap-[var(--space-sm)]">
-                  <Button variant="outline" size="sm">
-                    {alerta.leida ? 'Marcar no leída' : 'Marcar leída'}
-                  </Button>
-                  <Button variant="primary" size="sm">Ver detalle</Button>
+                  <p className="text-xs mt-1">{alerta.fecha}</p>
                 </div>
               </div>
             </Card>
@@ -211,10 +223,24 @@ export default function AlertasPage() {
         </div>
       )}
 
-      {/* Contador */}
-      <p className="text-sm text-[var(--color-text-muted)] text-center">
-        Mostrando {alertasFiltradas.length} de {alertasData.length} alertas
-      </p>
+      {/* FORM POST */}
+      {mostrarForm && (
+        <Card padding="md">
+          <form onSubmit={crearAlerta} className="grid gap-[var(--space-md)]">
+            <Input label="Target ID" value={form.target_id}
+              onChange={e => setForm({ ...form, target_id: e.target.value })} />
+
+            <Input label="Stock mínimo" value={form.min_stock}
+              onChange={e => setForm({ ...form, min_stock: e.target.value })} />
+
+            <Input label="Mensaje template"
+              value={form.mensaje_template}
+              onChange={e => setForm({ ...form, mensaje_template: e.target.value })} />
+
+            <Button type="submit">Crear alerta</Button>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }

@@ -2,84 +2,157 @@
  * Página de Personal – AGRo_BIIO
  * 
  * Gestión del personal de la empresa agrícola.
- * Incluye: listado, roles, estado, asignaciones.
+ * Incluye: listado, creación, edición y eliminación.
  */
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Button, Tag, Input, Empty } from '@/components/ui';
 
-/* Datos de ejemplo para personal */
-const personalData = [
-  { id: 1, nombre: 'Juan Pérez', cargo: 'Operador de maquinaria', rol: 'operador', estado: 'activo', telefono: '+54 9 11 1234-5678', email: 'juan.perez@agrobio.com', ingreso: '2020-03-15' },
-  { id: 2, nombre: 'María García', cargo: 'Supervisora de campo', rol: 'supervisor', estado: 'activo', telefono: '+54 9 11 2345-6789', email: 'maria.garcia@agrobio.com', ingreso: '2019-08-20' },
-  { id: 3, nombre: 'Carlos López', cargo: 'Técnico agrónomo', rol: 'tecnico', estado: 'activo', telefono: '+54 9 11 3456-7890', email: 'carlos.lopez@agrobio.com', ingreso: '2021-01-10' },
-  { id: 4, nombre: 'Ana Martínez', cargo: 'Operadora de maquinaria', rol: 'operador', estado: 'licencia', telefono: '+54 9 11 4567-8901', email: 'ana.martinez@agrobio.com', ingreso: '2022-05-01' },
-  { id: 5, nombre: 'Roberto Sánchez', cargo: 'Jefe de operaciones', rol: 'jefe', estado: 'activo', telefono: '+54 9 11 5678-9012', email: 'roberto.sanchez@agrobio.com', ingreso: '2018-02-28' },
-  { id: 6, nombre: 'Laura Fernández', cargo: 'Asistente administrativa', rol: 'admin', estado: 'activo', telefono: '+54 9 11 6789-0123', email: 'laura.fernandez@agrobio.com', ingreso: '2023-03-15' },
-];
-
-/* Roles disponibles */
-const roles = ['Todos', 'operador', 'supervisor', 'tecnico', 'jefe', 'admin'];
-const rolLabels: Record<string, string> = {
-  operador: 'Operador',
-  supervisor: 'Supervisor',
-  tecnico: 'Técnico',
-  jefe: 'Jefe',
-  admin: 'Administrativo',
-};
-
-/* Estados */
-const estadoLabels: Record<string, string> = {
-  activo: 'Activo',
-  licencia: 'En licencia',
-  inactivo: 'Inactivo',
-};
+interface Personal {
+  id: number;
+  usuario_id: number;
+  nombres: string;
+  apellidos: string;
+  cedula: string;
+  cargo: string;
+  fecha_ingreso: string;
+  estado: boolean;
+  telefono: string;
+  email: string;
+  username: string;
+  foto: string | null;
+}
 
 export default function PersonalPage() {
+  /* =========================
+     STATE
+     ========================= */
+  const [personal, setPersonal] = useState<Personal[]>([]);
   const [busqueda, setBusqueda] = useState('');
-  const [rolFiltro, setRolFiltro] = useState('Todos');
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [editando, setEditando] = useState<Personal | null>(null);
 
-  /* Filtrar personal */
-  const personalFiltrado = personalData.filter((p) => {
-    const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                              p.cargo.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideRol = rolFiltro === 'Todos' || p.rol === rolFiltro;
-    return coincideBusqueda && coincideRol;
+  const [form, setForm] = useState<Omit<Personal, 'id' | 'usuario_id' | 'foto'>>({
+    nombres: '',
+    apellidos: '',
+    cedula: '',
+    cargo: '',
+    fecha_ingreso: '',
+    estado: true,
+    telefono: '',
+    email: '',
+    username: '',
   });
 
-  /* Mapeo de estado a variante de Tag */
-  const estadoVariant: Record<string, 'success' | 'warning' | 'neutral'> = {
-    activo: 'success',
-    licencia: 'warning',
-    inactivo: 'neutral',
+  /* =========================
+     API
+     ========================= */
+  const API_URL = 'http://localhost:8000/api/personal';
+
+
+  const cargarPersonal = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      setPersonal(data);
+    } catch (error) {
+      console.error('Error cargando personal', error);
+    }
   };
 
-  /* Mapeo de rol a colores */
-  const rolVariant: Record<string, 'info' | 'warning' | 'success' | 'error' | 'neutral'> = {
-    operador: 'info',
-    supervisor: 'warning',
-    tecnico: 'success',
-    jefe: 'error',
-    admin: 'neutral',
+  useEffect(() => {
+    cargarPersonal();
+  }, []);
+
+  /* =========================
+     POST / PUT
+     ========================= */
+  const guardarPersonal = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(
+        editando ? `${API_URL}/${editando.id}` : API_URL,
+        {
+          method: editando ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      alert(editando ? 'Personal actualizado correctamente' : 'Personal creado correctamente');
+
+      setForm({
+        nombres: '',
+        apellidos: '',
+        cedula: '',
+        cargo: '',
+        fecha_ingreso: '',
+        estado: true,
+        telefono: '',
+        email: '',
+        username: '',
+      });
+
+      setEditando(null);
+      setMostrarForm(false);
+      cargarPersonal();
+    } catch {
+      alert('Error al guardar el personal');
+    }
   };
 
-  /* KPIs */
+  /* =========================
+     DELETE
+     ========================= */
+  const eliminarPersonal = async (id: number) => {
+    if (!confirm('¿Estás seguro de eliminar este registro?')) return;
+
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+
+      alert('Personal eliminado correctamente');
+      cargarPersonal();
+    } catch {
+      alert('Error al eliminar el personal');
+    }
+  };
+
+  /* =========================
+     FILTRO
+     ========================= */
+  const personalFiltrado = personal.filter((p) => {
+    const texto = `${p.nombres} ${p.apellidos} ${p.cargo}`.toLowerCase();
+    return texto.includes(busqueda.toLowerCase());
+  });
+
+  /* =========================
+     KPIs
+     ========================= */
   const kpis = {
-    total: personalData.length,
-    activos: personalData.filter(p => p.estado === 'activo').length,
-    licencia: personalData.filter(p => p.estado === 'licencia').length,
+    total: personal.length,
+    activos: personal.filter(p => p.estado).length,
+    inactivos: personal.filter(p => !p.estado).length,
   };
 
+  /* =========================
+     RENDER
+     ========================= */
   return (
     <div className="space-y-[var(--space-lg)]">
-      {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--space-md)]">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-[var(--color-text)]">
           👷 Personal
         </h1>
-        <Button variant="primary">+ Agregar personal</Button>
+        <Button variant="primary" onClick={() => setMostrarForm(!mostrarForm)}>
+          + Agregar personal
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -93,104 +166,115 @@ export default function PersonalPage() {
           <p className="text-sm text-[var(--color-text-muted)]">Activos</p>
         </Card>
         <Card padding="sm">
-          <p className="text-3xl font-bold text-[var(--color-warning)]">{kpis.licencia}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">En licencia</p>
+          <p className="text-3xl font-bold text-[var(--color-warning)]">{kpis.inactivos}</p>
+          <p className="text-sm text-[var(--color-text-muted)]">Inactivos</p>
         </Card>
       </div>
 
-      {/* Filtros */}
+      {/* Filtro */}
       <Card padding="md">
-        <div className="flex flex-col md:flex-row gap-[var(--space-md)]">
-          <div className="flex-1">
-            <Input
-              placeholder="Buscar por nombre o cargo..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap gap-[var(--space-sm)]">
-            {roles.map((rol) => (
-              <button
-                key={rol}
-                onClick={() => setRolFiltro(rol)}
-                className={`
-                  px-3 py-1.5 rounded-[var(--radius-full)] text-sm font-medium
-                  transition-colors duration-[var(--transition-fast)]
-                  ${rolFiltro === rol
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)] hover:text-white'
-                  }
-                `}
-              >
-                {rol === 'Todos' ? 'Todos' : rolLabels[rol]}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Input
+          placeholder="Buscar por nombre o cargo..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
       </Card>
 
-      {/* Grid de personal */}
+      {/* Grid */}
       {personalFiltrado.length === 0 ? (
         <Empty
           icon="👷"
           title="Sin personal"
-          message="No se encontró personal con los filtros seleccionados."
-          action={<Button variant="outline" onClick={() => { setBusqueda(''); setRolFiltro('Todos'); }}>Limpiar filtros</Button>}
+          message="No se encontró personal."
         />
       ) : (
         <div className="grid gap-[var(--space-md)] sm:grid-cols-2 lg:grid-cols-3">
           {personalFiltrado.map((persona) => (
             <Card key={persona.id} className="hover:shadow-[var(--shadow-lg)] transition-shadow">
-              {/* Avatar y estado */}
-              <div className="flex items-start justify-between mb-[var(--space-md)]">
-                <div className="flex items-center gap-[var(--space-md)]">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-[var(--radius-full)] bg-[var(--color-primary)] flex items-center justify-center text-white font-bold text-lg">
-                    {persona.nombre.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[var(--color-text)]">{persona.nombre}</h3>
-                    <p className="text-sm text-[var(--color-text-muted)]">{persona.cargo}</p>
-                  </div>
+              {/* Avatar */}
+              <div className="flex items-center gap-[var(--space-md)] mb-[var(--space-md)]">
+                <div className="w-12 h-12 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-bold">
+                  {persona.nombres[0]}{persona.apellidos[0]}
                 </div>
-                <Tag variant={estadoVariant[persona.estado]}>{estadoLabels[persona.estado]}</Tag>
+                <div>
+                  <h3 className="font-semibold text-[var(--color-text)]">
+                    {persona.nombres} {persona.apellidos}
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    {persona.cargo}
+                  </p>
+                </div>
               </div>
 
-              {/* Tags de rol */}
-              <div className="mb-[var(--space-md)]">
-                <Tag variant={rolVariant[persona.rol]} size="md">{rolLabels[persona.rol]}</Tag>
-              </div>
+              <Tag variant={persona.estado ? 'success' : 'neutral'}>
+                {persona.estado ? 'Activo' : 'Inactivo'}
+              </Tag>
 
-              {/* Información de contacto */}
-              <div className="space-y-[var(--space-xs)] text-sm border-t border-[var(--color-bg-muted)] pt-[var(--space-md)]">
-                <div className="flex items-center gap-[var(--space-sm)]">
-                  <span>📞</span>
-                  <span className="text-[var(--color-text-muted)]">{persona.telefono}</span>
-                </div>
-                <div className="flex items-center gap-[var(--space-sm)]">
-                  <span>✉️</span>
-                  <span className="text-[var(--color-text-muted)] truncate">{persona.email}</span>
-                </div>
-                <div className="flex items-center gap-[var(--space-sm)]">
-                  <span>📅</span>
-                  <span className="text-[var(--color-text-muted)]">Ingreso: {persona.ingreso}</span>
-                </div>
+              {/* Contacto */}
+              <div className="space-y-[var(--space-xs)] text-sm border-t border-[var(--color-bg-muted)] pt-[var(--space-md)] mt-[var(--space-md)]">
+                <div>📞 {persona.telefono}</div>
+                <div>✉️ {persona.email}</div>
+                <div>📅 Ingreso: {persona.fecha_ingreso}</div>
               </div>
 
               {/* Acciones */}
               <div className="flex gap-[var(--space-sm)] mt-[var(--space-md)]">
-                <Button variant="outline" size="sm" className="flex-1">Ver perfil</Button>
-                <Button variant="primary" size="sm" className="flex-1">Editar</Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    setEditando(persona);
+                    setForm({
+                      nombres: persona.nombres,
+                      apellidos: persona.apellidos,
+                      cedula: persona.cedula,
+                      cargo: persona.cargo,
+                      fecha_ingreso: persona.fecha_ingreso,
+                      estado: persona.estado,
+                      telefono: persona.telefono,
+                      email: persona.email,
+                      username: persona.username,
+                    });
+                    setMostrarForm(true);
+                  }}
+                >
+                  Editar
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => eliminarPersonal(persona.id)}
+                >
+                  Eliminar
+                </Button>
               </div>
             </Card>
           ))}
         </div>
       )}
 
-      {/* Contador */}
-      <p className="text-sm text-[var(--color-text-muted)] text-center">
-        Mostrando {personalFiltrado.length} de {personalData.length} personas
-      </p>
+      {/* FORM */}
+      {mostrarForm && (
+        <Card padding="md">
+          <form onSubmit={guardarPersonal} className="grid gap-[var(--space-md)]">
+            <Input label="Nombres" value={form.nombres} onChange={e => setForm({ ...form, nombres: e.target.value })} />
+            <Input label="Apellidos" value={form.apellidos} onChange={e => setForm({ ...form, apellidos: e.target.value })} />
+            <Input label="Cédula" value={form.cedula} onChange={e => setForm({ ...form, cedula: e.target.value })} />
+            <Input label="Cargo" value={form.cargo} onChange={e => setForm({ ...form, cargo: e.target.value })} />
+            <Input label="Fecha de ingreso" type="date" value={form.fecha_ingreso} onChange={e => setForm({ ...form, fecha_ingreso: e.target.value })} />
+            <Input label="Teléfono" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
+            <Input label="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            <Input label="Username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+
+            <Button type="submit" variant="primary">
+              {editando ? 'Actualizar' : 'Crear'}
+            </Button>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }
