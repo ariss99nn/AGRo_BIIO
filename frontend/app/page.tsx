@@ -141,7 +141,7 @@ export default function DashboardPage() {
       {/* ======================================================
           🚪 DASHBOARD PARA USUARIO NO AUTENTICADO
          ====================================================== */}
-       {!isAuthenticated && (
+      {/* {!isAuthenticated && (
         <div className="min-h-[70vh] flex items-center justify-center">
           <Card className="max-w-xl text-center space-y-[var(--space-md)] p-[var(--space-xl)]">
             <h1 className="text-3xl font-bold text-[var(--color-primary)]">
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             </div>
           </Card>
         </div>
-      )} 
+      )} */}
     </main>
   );
 }
