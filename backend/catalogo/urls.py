@@ -1,23 +1,32 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from . import views
+from django.urls import path
+from .views import (
+    ProductoListCreateView, ProductoDetailView,
+    InsumoListCreateView, InsumoDetailView, InsumoStockBajoView,
+    TasaConsumoListCreateView, TasaConsumoDetailView,
+    ConsumoListCreateView, ConsumoDetailView,
+    ConsumoInsumoListView, ConsumoInsumoDetailView
+)
 
-# Crear router
-router = DefaultRouter()
-router.register(r'productos', views.ProductoViewSet)
-router.register(r'insumos', views.InsumoViewSet)
-router.register(r'tasas-consumo', views.TasaConsumoViewSet)
-router.register(r'consumos', views.ConsumoViewSet)
-router.register(r'consumo-insumos', views.ConsumoInsumoViewSet)
 
 urlpatterns = [
-    # Las rutas del router van bajo /api/
-    path('api/', include(router.urls)),
+    # Productos
+    path('productos/', ProductoListCreateView.as_view(), name='producto-list-create'),
+    path('productos/<int:pk>/', ProductoDetailView.as_view(), name='producto-detail'),
     
-    # Otras rutas específicas
-    path('api/crear-consumo/', views.CrearConsumoCompleto.as_view(), name='crear_consumo'),
-    path('api/insumos-bajo-stock/', views.InsumosBajoStock.as_view(), name='insumos_bajo_stock'),
+    # Insumos
+    path('insumos/', InsumoListCreateView.as_view(), name='insumo-list-create'),
+    path('insumos/<int:pk>/', InsumoDetailView.as_view(), name='insumo-detail'),
+    path('insumos/stock-bajo/', InsumoStockBajoView.as_view(), name='insumo-stock-bajo'),
     
-    # API auth - habilita login/logout en la interfaz de DRF
-    path('api-auth/', include('rest_framework.urls')),
+    # Tasas de Consumo
+    path('tasas-consumo/', TasaConsumoListCreateView.as_view(), name='tasa-consumo-list-create'),
+    path('tasas-consumo/<int:pk>/', TasaConsumoDetailView.as_view(), name='tasa-consumo-detail'),
+    
+    # Consumos
+    path('consumos/', ConsumoListCreateView.as_view(), name='consumo-list-create'),
+    path('consumos/<int:pk>/', ConsumoDetailView.as_view(), name='consumo-detail'),
+    
+    # Consumo_insumo (relación muchos a muchos)
+    path('consumos/<int:consumo_id>/insumos/', ConsumoInsumoListView.as_view(), name='consumo-insumos-list'),
+    path('consumos/<int:consumo_id>/insumos/<int:insumo_id>/', ConsumoInsumoDetailView.as_view(), name='consumo-insumo-detail'),
 ]

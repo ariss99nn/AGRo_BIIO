@@ -16,19 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from reportes import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/usuarios/', include('usuarios.urls')),
-    path("api/ia/", include("ia.urls")),
-    path("api/maquinaria/", include("maquinaria.urls")),
-    path("api/cultivos/", include("cultivos.urls")),
-    path("api/catalogo/", include("catalogo.urls")),
-    path("api/operaciones/", include("operaciones.urls")),
-    path("api/alertas/", include("alertas.urls")),
-    path("api/personal/", include("personal.urls")),
-    path("api/reportes/", include("reportes.urls")),
+    path('api/v1/', include('usuarios.urls')),
+    path("api/v1/", include("ia.urls")),
+    path("api/v1/", include("maquinaria.urls")),
+    path("api/v1/", include("cultivos.urls")),
+    path("api/v1/", include("catalogo.urls")),
+    path("api/v1/", include("operaciones.urls")),
+    path("api/v1/", include("alertas.urls")),
+    path("api/v1/", include("personal.urls")),
 
+    path('admin/urls-list/', views.list_urls, name='list_urls'),
 
 ]
 
