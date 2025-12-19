@@ -1,132 +1,165 @@
-/**
- * Página de Catálogo – AGRo_BIIO
- * 
- * Listado de productos/insumos del catálogo agrícola.
- * Incluye: búsqueda, filtros por categoría, tarjetas con estado.
- */
-
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Button, Input, Tag, Empty } from '@/components/ui';
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Input, Empty } from '@/components/ui';
 import Link from 'next/link';
 
-/* Datos de ejemplo para el catálogo */
-const catalogoData = [
-  { id: 1, nombre: 'Fertilizante NPK', categoria: 'Fertilizantes', stock: 150, unidad: 'kg', estado: 'disponible' },
-  { id: 2, nombre: 'Semilla de Maíz Híbrido', categoria: 'Semillas', stock: 500, unidad: 'kg', estado: 'disponible' },
-  { id: 3, nombre: 'Herbicida Glifosato', categoria: 'Agroquímicos', stock: 25, unidad: 'L', estado: 'bajo' },
-  { id: 4, nombre: 'Insecticida Orgánico', categoria: 'Agroquímicos', stock: 0, unidad: 'L', estado: 'agotado' },
-  { id: 5, nombre: 'Semilla de Soja', categoria: 'Semillas', stock: 300, unidad: 'kg', estado: 'disponible' },
-  { id: 6, nombre: 'Abono Orgánico', categoria: 'Fertilizantes', stock: 80, unidad: 'kg', estado: 'disponible' },
-];
+/* ==============================
+   ENDPOINT
+================================ */
+const API_URL = 'http://localhost/api/v1/productos';
+// luego:
+// const API_URL = 'http://localhost:8000/api/catalogo';
 
-/* Categorías disponibles para filtrar */
-const categorias = ['Todas', 'Fertilizantes', 'Semillas', 'Agroquímicos'];
+interface Producto {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  unidad_por_defecto: string;
+}
 
 export default function CatalogoPage() {
-  /* Estado para búsqueda y filtro */
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [busqueda, setBusqueda] = useState('');
-  const [categoriaActiva, setCategoriaActiva] = useState('Todas');
 
-  /* Filtrar productos según búsqueda y categoría */
-  const productosFiltrados = catalogoData.filter((producto) => {
-    const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCategoria = categoriaActiva === 'Todas' || producto.categoria === categoriaActiva;
-    return coincideBusqueda && coincideCategoria;
+  /* FORM */
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [form, setForm] = useState({
+    nombre: '',
+    descripcion: '',
+    unidad_por_defecto: '',
   });
 
-  /* Mapeo de estado a variante de Tag */
-  const estadoVariant = {
-    disponible: 'success' as const,
-    bajo: 'warning' as const,
-    agotado: 'error' as const,
+  /* ==============================
+     GET
+  ================================ */
+  const obtenerProductos = async () => {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    setProductos(data);
   };
 
+  useEffect(() => {
+    obtenerProductos();
+  }, []);
+
+  /* ==============================
+     POST (simulado)
+  ================================ */
+  const crearProducto = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const nuevoProducto: Producto = {
+      id: Date.now(),
+      nombre: form.nombre,
+      descripcion: form.descripcion,
+      unidad_por_defecto: form.unidad_por_defecto,
+    };
+
+    setProductos(prev => [...prev, nuevoProducto]);
+    setMostrarForm(false);
+    setForm({ nombre: '', descripcion: '', unidad_por_defecto: '' });
+
+    alert('Producto creado (simulado)');
+  };
+
+  /* ==============================
+     DELETE (simulado)
+  ================================ */
+  const eliminarProducto = (id: number) => {
+    if (!confirm('¿Eliminar producto?')) return;
+    setProductos(prev => prev.filter(p => p.id !== id));
+  };
+
+  /* ==============================
+     FILTRO
+  ================================ */
+  const productosFiltrados = productos.filter(p =>
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
-    <div className="space-y-[var(--space-lg)]">
-      {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--space-md)]">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
-          📦 Catálogo de Insumos
-        </h1>
-        <Button variant="primary">+ Agregar producto</Button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">📦 Catálogo</h1>
+        <Button onClick={() => setMostrarForm(!mostrarForm)}>
+          + Nuevo producto
+        </Button>
       </div>
 
-      {/* Barra de búsqueda y filtros */}
-      <Card padding="md">
-        <div className="flex flex-col md:flex-row gap-[var(--space-md)]">
-          {/* Input de búsqueda */}
-          <div className="flex-1">
-            <Input
-              placeholder="Buscar por nombre..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
+      {/* FORM */}
+      {mostrarForm && (
+        <Card>
+          <h3 className="font-semibold mb-4">Nuevo producto</h3>
 
-          {/* Filtros por categoría */}
-          <div className="flex flex-wrap gap-[var(--space-sm)]">
-            {categorias.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoriaActiva(cat)}
-                className={`
-                  px-3 py-1.5 rounded-[var(--radius-full)] text-sm font-medium
-                  transition-colors duration-[var(--transition-fast)]
-                  ${categoriaActiva === cat
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)] hover:text-white'
-                  }
-                `}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
+          <form onSubmit={crearProducto} className="grid gap-4 sm:grid-cols-2">
+            <Input
+              placeholder="Nombre"
+              value={form.nombre}
+              onChange={e => setForm({ ...form, nombre: e.target.value })}
+            />
+
+            <Input
+              placeholder="Unidad por defecto (kg, L, un)"
+              value={form.unidad_por_defecto}
+              onChange={e => setForm({ ...form, unidad_por_defecto: e.target.value })}
+            />
+
+            <Input
+              placeholder="Descripción"
+              className="sm:col-span-2"
+              value={form.descripcion}
+              onChange={e => setForm({ ...form, descripcion: e.target.value })}
+            />
+
+            <div className="flex gap-2 sm:col-span-2">
+              <Button type="submit">Guardar</Button>
+              <Button variant="outline" onClick={() => setMostrarForm(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {/* BUSCADOR */}
+      <Card>
+        <Input
+          placeholder="Buscar producto..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+        />
       </Card>
 
-      {/* Listado de productos */}
+      {/* LISTA */}
       {productosFiltrados.length === 0 ? (
-        <Empty
-          icon="📦"
-          title="Sin productos"
-          message="No se encontraron productos con los filtros seleccionados."
-          action={<Button variant="outline" onClick={() => { setBusqueda(''); setCategoriaActiva('Todas'); }}>Limpiar filtros</Button>}
-        />
+        <Empty title="Sin productos" />
       ) : (
-        <div className="grid gap-[var(--space-md)] sm:grid-cols-2 lg:grid-cols-3">
-          {productosFiltrados.map((producto) => (
-            <Link key={producto.id} href={`/catalogo/${producto.id}`}>
-              <Card className="h-full hover:shadow-[var(--shadow-lg)] transition-shadow duration-[var(--transition-normal)] cursor-pointer">
-                {/* Cabecera con categoría y estado */}
-                <div className="flex items-center justify-between mb-[var(--space-sm)]">
-                  <Tag variant="neutral">{producto.categoria}</Tag>
-                  <Tag variant={estadoVariant[producto.estado as keyof typeof estadoVariant]}>
-                    {producto.estado}
-                  </Tag>
-                </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {productosFiltrados.map(p => (
+            <Card key={p.id}>
+              <h3 className="font-semibold">{p.nombre}</h3>
+              <p className="text-sm text-muted">{p.descripcion}</p>
+              <p className="text-sm mt-1">
+                Unidad: <strong>{p.unidad_por_defecto}</strong>
+              </p>
 
-                {/* Nombre del producto */}
-                <h3 className="text-lg font-semibold text-[var(--color-text)] mb-[var(--space-sm)]">
-                  {producto.nombre}
-                </h3>
-
-                {/* Stock */}
-                <p className="text-sm text-[var(--color-text-muted)]">
-                  Stock: <span className="font-medium text-[var(--color-text)]">{producto.stock} {producto.unidad}</span>
-                </p>
-              </Card>
-            </Link>
+              <div className="flex gap-2 mt-4">
+                <Link href={`/catalogo/${p.id}`}>
+                  <Button size="sm" variant="outline">Ver</Button>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => eliminarProducto(p.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            </Card>
           ))}
         </div>
       )}
-
-      {/* Contador de resultados */}
-      <p className="text-sm text-[var(--color-text-muted)] text-center">
-        Mostrando {productosFiltrados.length} de {catalogoData.length} productos
-      </p>
     </div>
   );
 }

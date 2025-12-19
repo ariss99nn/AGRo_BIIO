@@ -1,15 +1,3 @@
-/**
- * Componente Header – AGRo_BIIO
- * 
- * Barra superior con:
- * - Logo/nombre de la app
- * - Navegación móvil (botón hamburguesa)
- * - Avatar/menú de usuario
- * 
- * Props:
- * - onMenuClick: función para abrir/cerrar sidebar en móvil
- */
-
 import React from 'react';
 
 interface HeaderProps {
@@ -41,7 +29,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
           "
           aria-label="Abrir menú"
         >
-          {/* Icono hamburguesa simple */}
           <svg
             className="w-6 h-6"
             fill="none"
@@ -59,14 +46,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Logo y nombre */}
         <a href="/" className="flex items-center gap-[var(--space-sm)]">
-          <span className="text-2xl">🌱</span>
+          <img
+            src="/favicon.png"
+            alt="AGRo_BIIO logo"
+            className="w-14 h-14"
+          />
           <span className="text-lg font-bold text-[var(--color-primary)]">
             AGRo_BIIO
           </span>
         </a>
       </div>
 
-      {/* Lado derecho: avatar usuario */}
+      {/* Lado derecho: avatar usuario + botón login */}
       <div className="flex items-center gap-[var(--space-sm)]">
         {/* Indicador de estado */}
         <span className="hidden sm:block text-sm text-[var(--color-text-muted)]">
@@ -87,6 +78,21 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           U
         </button>
+
+        {/* Nuevo botón: Ir a login */}
+        <a
+          href="/usuarios/login"
+          className="
+            ml-2 px-4 py-2
+            bg-[var(--color-secondary)]
+            text-white font-medium
+            rounded-[var(--radius-md)]
+            hover:bg-[var(--color-secondary-light)]
+            transition-colors duration-[var(--transition-fast)]
+          "
+        >
+          Iniciar sesión
+        </a>
       </div>
     </header>
   );

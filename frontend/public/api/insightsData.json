@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "titulo": "Optimizar riego en Lote Norte",
+    "categoria": "riego",
+    "confianza": 92,
+    "impacto": "alto",
+    "descripcion": "Basado en datos de humedad y pronóstico, se recomienda reducir el riego un 20% esta semana.",
+    "ahorro": "Ahorro estimado: 15,000 L de agua",
+    "accion": "Aplicar recomendación"
+  },
+  {
+    "id": 2,
+    "titulo": "Adelantar cosecha de trigo",
+    "categoria": "cosecha",
+    "confianza": 87,
+    "impacto": "alto",
+    "descripcion": "Las condiciones climáticas de la próxima semana son óptimas. Retrasar podría reducir calidad.",
+    "ahorro": "Mejora de calidad: +5% rendimiento",
+    "accion": "Programar cosecha"
+  },
+  {
+    "id": 3,
+    "titulo": "Tratamiento preventivo recomendado",
+    "categoria": "plagas",
+    "confianza": 78,
+    "impacto": "medio",
+    "descripcion": "Patrón de humedad y temperatura favorece aparición de roya. Aplicar fungicida preventivo.",
+    "ahorro": "Prevención de pérdida: 8% de la producción",
+    "accion": "Ver tratamiento"
+  },
+  {
+    "id": 4,
+    "titulo": "Rotación de cultivos sugerida",
+    "categoria": "planificacion",
+    "confianza": 85,
+    "impacto": "medio",
+    "descripcion": "Para el próximo ciclo, rotar soja por maíz en Lote Sur mejorará la salud del suelo.",
+    "ahorro": "Mejora de nutrientes: +12%",
+    "accion": "Ver plan"
+  },
+  {
+    "id": 5,
+    "titulo": "Mantenimiento predictivo: Cosechadora",
+    "categoria": "maquinaria",
+    "confianza": 94,
+    "impacto": "alto",
+    "descripcion": "Análisis de datos indica desgaste en componentes. Programar revisión antes de cosecha.",
+    "ahorro": "Evitar parada: 48 horas de operación",
+    "accion": "Agendar mantenimiento"
+  }
+]

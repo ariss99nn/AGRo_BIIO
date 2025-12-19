@@ -31,6 +31,7 @@ const navLinks = [
   { href: '/personal', label: 'Personal', icon: '👷' },
   { href: '/usuarios', label: 'Usuarios', icon: '👤' },
   { href: '/alertas', label: 'Alertas', icon: '🔔' },
+  { href: '/ia', label: 'IA', icon: '🤖' },
   { href: '/reportes', label: 'Reportes', icon: '📈' },
 ];
 

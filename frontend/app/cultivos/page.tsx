@@ -1,191 +1,250 @@
-/**
- * Página de Cultivos – AGRo_BIIO
- * 
- * Listado de cultivos activos con estado, área y progreso.
- * Incluye: búsqueda, filtros, tarjetas visuales.
- */
-
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Button, Input, Tag, Empty } from '@/components/ui';
 import Link from 'next/link';
 
-/* Datos de ejemplo para cultivos */
-const cultivosData = [
-  { id: 1, nombre: 'Maíz - Lote Norte', variedad: 'Híbrido DK-7500', area: 25, unidad: 'ha', estado: 'crecimiento', progreso: 65, fechaSiembra: '2024-09-15' },
-  { id: 2, nombre: 'Soja - Lote Sur', variedad: 'Don Mario 4670', area: 40, unidad: 'ha', estado: 'floracion', progreso: 45, fechaSiembra: '2024-10-01' },
-  { id: 3, nombre: 'Trigo - Lote Este', variedad: 'Klein Proteo', area: 30, unidad: 'ha', estado: 'cosecha', progreso: 95, fechaSiembra: '2024-06-20' },
-  { id: 4, nombre: 'Girasol - Lote Oeste', variedad: 'Paraíso 20', area: 15, unidad: 'ha', estado: 'siembra', progreso: 10, fechaSiembra: '2024-11-10' },
-  { id: 5, nombre: 'Maíz - Lote Central', variedad: 'Pioneer P1234', area: 20, unidad: 'ha', estado: 'crecimiento', progreso: 50, fechaSiembra: '2024-09-25' },
-];
+/* ==============================
+   ENDPOINT REAL
+================================ */
+const API_URL = 'http://localhost:8000/api/cultivos';
 
-/* Estados disponibles para filtrar */
-const estados = ['Todos', 'siembra', 'crecimiento', 'floracion', 'cosecha'];
+/* ==============================
+   TIPOS
+================================ */
+interface Cultivo {
+  id: number;
+  nombre: string;
+  tipo: string;
+  descripcion: string;
+  fecha_siembra: string;
+  fecha_cosecha_estimada: string;
+  area_sembrada: string;
+  estado: string;
+  notas: string;
+}
 
-/* Etiquetas de estado más amigables */
+/* Estados */
+const estados = ['Todos', 'SEMBRADO', 'CRECIMIENTO', 'FLORACION', 'COSECHA'];
+
 const estadoLabels: Record<string, string> = {
-  siembra: 'Siembra',
-  crecimiento: 'Crecimiento',
-  floracion: 'Floración',
-  cosecha: 'Cosecha',
+  SEMBRADO: 'Sembrado',
+  CRECIMIENTO: 'Crecimiento',
+  FLORACION: 'Floración',
+  COSECHA: 'Cosecha',
 };
 
 export default function CultivosPage() {
-  /* Estado para búsqueda y filtro */
+  const [cultivos, setCultivos] = useState<Cultivo[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [estadoActivo, setEstadoActivo] = useState('Todos');
 
-  /* Filtrar cultivos según búsqueda y estado */
-  const cultivosFiltrados = cultivosData.filter((cultivo) => {
-    const coincideBusqueda = cultivo.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                              cultivo.variedad.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideEstado = estadoActivo === 'Todos' || cultivo.estado === estadoActivo;
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [editando, setEditando] = useState<Cultivo | null>(null);
+
+  const [form, setForm] = useState({
+    nombre: '',
+    tipo: '',
+    descripcion: '',
+    fecha_siembra: '',
+    fecha_cosecha_estimada: '',
+    area_sembrada: '',
+    estado: 'SEMBRADO',
+    notas: '',
+  });
+
+  /* ==============================
+     GET
+  ================================ */
+  const obtenerCultivos = async () => {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    setCultivos(data);
+  };
+
+  useEffect(() => {
+    obtenerCultivos();
+  }, []);
+
+  /* ==============================
+     POST / PUT
+  ================================ */
+  const guardarCultivo = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const method = editando ? 'PUT' : 'POST';
+    const url = editando ? `${API_URL}/${editando.id}` : API_URL;
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    if (!res.ok) {
+      alert('Error al guardar cultivo');
+      return;
+    }
+
+    alert(editando ? 'Cultivo actualizado' : 'Cultivo creado');
+    setMostrarForm(false);
+    setEditando(null);
+    obtenerCultivos();
+  };
+
+  /* ==============================
+     DELETE
+  ================================ */
+  const eliminarCultivo = async (id: number) => {
+    if (!confirm('¿Eliminar este cultivo?')) return;
+
+    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+
+    if (!res.ok) {
+      alert('Error al eliminar cultivo');
+      return;
+    }
+
+    alert('Cultivo eliminado');
+    obtenerCultivos();
+  };
+
+  /* ==============================
+     FILTROS
+  ================================ */
+  const cultivosFiltrados = cultivos.filter(c => {
+    const coincideBusqueda =
+      c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.tipo.toLowerCase().includes(busqueda.toLowerCase());
+
+    const coincideEstado =
+      estadoActivo === 'Todos' || c.estado === estadoActivo;
+
     return coincideBusqueda && coincideEstado;
   });
 
-  /* Mapeo de estado a variante de Tag */
   const estadoVariant: Record<string, 'success' | 'warning' | 'info' | 'neutral'> = {
-    siembra: 'info',
-    crecimiento: 'success',
-    floracion: 'warning',
-    cosecha: 'neutral',
-  };
-
-  /* Color de la barra de progreso según porcentaje */
-  const getProgresoColor = (progreso: number) => {
-    if (progreso >= 80) return 'bg-[var(--color-success)]';
-    if (progreso >= 40) return 'bg-[var(--color-warning)]';
-    return 'bg-[var(--color-info)]';
+    SEMBRADO: 'info',
+    CRECIMIENTO: 'success',
+    FLORACION: 'warning',
+    COSECHA: 'neutral',
   };
 
   return (
     <div className="space-y-[var(--space-lg)]">
-      {/* Encabezado */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--space-md)]">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
-          🌾 Cultivos Activos
-        </h1>
-        <Button variant="primary">+ Nuevo cultivo</Button>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">🌾 Cultivos</h1>
+        <Button onClick={() => { setMostrarForm(true); setEditando(null); }}>
+          + Nuevo cultivo
+        </Button>
       </div>
 
-      {/* Resumen rápido */}
-      <div className="grid gap-[var(--space-md)] grid-cols-2 lg:grid-cols-4">
-        <Card padding="sm">
-          <p className="text-2xl font-bold text-[var(--color-primary)]">{cultivosData.length}</p>
-          <p className="text-sm text-[var(--color-text-muted)]">Cultivos activos</p>
-        </Card>
-        <Card padding="sm">
-          <p className="text-2xl font-bold text-[var(--color-secondary)]">
-            {cultivosData.reduce((acc, c) => acc + c.area, 0)} ha
-          </p>
-          <p className="text-sm text-[var(--color-text-muted)]">Área total</p>
-        </Card>
-        <Card padding="sm">
-          <p className="text-2xl font-bold text-[var(--color-success)]">
-            {cultivosData.filter(c => c.estado === 'cosecha').length}
-          </p>
-          <p className="text-sm text-[var(--color-text-muted)]">Listos para cosecha</p>
-        </Card>
-        <Card padding="sm">
-          <p className="text-2xl font-bold text-[var(--color-info)]">
-            {cultivosData.filter(c => c.estado === 'siembra').length}
-          </p>
-          <p className="text-sm text-[var(--color-text-muted)]">En siembra</p>
-        </Card>
-      </div>
+      {/* FORMULARIO */}
+      {mostrarForm && (
+        <Card>
+          <h3 className="font-semibold mb-4">
+            {editando ? 'Editar cultivo' : 'Nuevo cultivo'}
+          </h3>
 
-      {/* Barra de búsqueda y filtros */}
-      <Card padding="md">
-        <div className="flex flex-col md:flex-row gap-[var(--space-md)]">
-          {/* Input de búsqueda */}
-          <div className="flex-1">
-            <Input
-              placeholder="Buscar por nombre o variedad..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
-
-          {/* Filtros por estado */}
-          <div className="flex flex-wrap gap-[var(--space-sm)]">
-            {estados.map((est) => (
-              <button
-                key={est}
-                onClick={() => setEstadoActivo(est)}
-                className={`
-                  px-3 py-1.5 rounded-[var(--radius-full)] text-sm font-medium
-                  transition-colors duration-[var(--transition-fast)]
-                  ${estadoActivo === est
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)] hover:text-white'
-                  }
-                `}
-              >
-                {est === 'Todos' ? 'Todos' : estadoLabels[est]}
-              </button>
+          <form onSubmit={guardarCultivo} className="grid gap-4 sm:grid-cols-2">
+            {Object.entries(form).map(([key, value]) => (
+              <Input
+                key={key}
+                label={key.replaceAll('_', ' ')}
+                value={value}
+                onChange={e =>
+                  setForm({ ...form, [key]: e.target.value })
+                }
+              />
             ))}
-          </div>
+
+            <div className="flex gap-2 sm:col-span-2">
+              <Button type="submit">Guardar</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setMostrarForm(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {/* FILTROS */}
+      <Card>
+        <div className="flex gap-4 flex-wrap">
+          <Input
+            placeholder="Buscar cultivo..."
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+          />
+
+          {estados.map(est => (
+            <button
+              key={est}
+              onClick={() => setEstadoActivo(est)}
+              className={`px-3 py-1 rounded-full text-sm ${
+                estadoActivo === est
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-[var(--color-bg-muted)]'
+              }`}
+            >
+              {est === 'Todos' ? 'Todos' : estadoLabels[est]}
+            </button>
+          ))}
         </div>
       </Card>
 
-      {/* Listado de cultivos */}
+      {/* LISTA */}
       {cultivosFiltrados.length === 0 ? (
-        <Empty
-          icon="🌱"
-          title="Sin cultivos"
-          message="No se encontraron cultivos con los filtros seleccionados."
-          action={<Button variant="outline" onClick={() => { setBusqueda(''); setEstadoActivo('Todos'); }}>Limpiar filtros</Button>}
-        />
+        <Empty title="Sin cultivos" />
       ) : (
-        <div className="grid gap-[var(--space-md)] sm:grid-cols-2 lg:grid-cols-3">
-          {cultivosFiltrados.map((cultivo) => (
-            <Link key={cultivo.id} href={`/cultivos/${cultivo.id}`}>
-              <Card className="h-full hover:shadow-[var(--shadow-lg)] transition-shadow duration-[var(--transition-normal)] cursor-pointer">
-                {/* Cabecera con estado */}
-                <div className="flex items-center justify-between mb-[var(--space-sm)]">
-                  <Tag variant={estadoVariant[cultivo.estado]}>
-                    {estadoLabels[cultivo.estado]}
-                  </Tag>
-                  <span className="text-sm text-[var(--color-text-muted)]">{cultivo.area} {cultivo.unidad}</span>
-                </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cultivosFiltrados.map(c => (
+            <Card key={c.id} className="hover:shadow-lg">
+              <div className="flex justify-between mb-2">
+                <Tag variant={estadoVariant[c.estado]}>
+                  {estadoLabels[c.estado]}
+                </Tag>
+                <span>{c.area_sembrada} m²</span>
+              </div>
 
-                {/* Nombre y variedad */}
-                <h3 className="text-lg font-semibold text-[var(--color-text)] mb-[var(--space-xs)]">
-                  {cultivo.nombre}
-                </h3>
-                <p className="text-sm text-[var(--color-text-muted)] mb-[var(--space-md)]">
-                  {cultivo.variedad}
-                </p>
+              <h3 className="font-semibold">{c.nombre}</h3>
+              <p className="text-sm text-muted">{c.tipo}</p>
 
-                {/* Barra de progreso */}
-                <div className="space-y-[var(--space-xs)]">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[var(--color-text-muted)]">Progreso</span>
-                    <span className="font-medium text-[var(--color-text)]">{cultivo.progreso}%</span>
-                  </div>
-                  <div className="h-2 bg-[var(--color-bg-muted)] rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${getProgresoColor(cultivo.progreso)} transition-all duration-300`}
-                      style={{ width: `${cultivo.progreso}%` }}
-                    />
-                  </div>
-                </div>
+              <div className="flex gap-2 mt-4">
+                <Link href={`/cultivos/${c.id}`} className="flex-1">
+                  <Button size="sm" variant="outline" className="w-full">
+                    Ver detalle
+                  </Button>
+                </Link>
 
-                {/* Fecha de siembra */}
-                <p className="text-xs text-[var(--color-text-light)] mt-[var(--space-sm)]">
-                  Siembra: {cultivo.fechaSiembra}
-                </p>
-              </Card>
-            </Link>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditando(c);
+                    setForm(c as any);
+                    setMostrarForm(true);
+                  }}
+                >
+                  Editar
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => eliminarCultivo(c.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            </Card>
           ))}
         </div>
       )}
-
-      {/* Contador de resultados */}
-      <p className="text-sm text-[var(--color-text-muted)] text-center">
-        Mostrando {cultivosFiltrados.length} de {cultivosData.length} cultivos
-      </p>
     </div>
   );
 }

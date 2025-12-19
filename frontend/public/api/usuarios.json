@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Admin Principal",
+    "email": "admin@agrobio.com",
+    "rol": "admin",
+    "estado": "activo",
+    "ultimoAcceso": "2024-12-09 14:30"
+  },
+  {
+    "id": 2,
+    "nombre": "Juan Pérez",
+    "email": "juan.perez@agrobio.com",
+    "rol": "operador",
+    "estado": "activo",
+    "ultimoAcceso": "2024-12-09 10:15"
+  },
+  {
+    "id": 3,
+    "nombre": "María García",
+    "email": "maria.garcia@agrobio.com",
+    "rol": "supervisor",
+    "estado": "activo",
+    "ultimoAcceso": "2024-12-08 18:45"
+  },
+  {
+    "id": 4,
+    "nombre": "Carlos López",
+    "email": "carlos.lopez@agrobio.com",
+    "rol": "tecnico",
+    "estado": "activo",
+    "ultimoAcceso": "2024-12-09 09:00"
+  },
+  {
+    "id": 5,
+    "nombre": "Ana Martínez",
+    "email": "ana.martinez@agrobio.com",
+    "rol": "operador",
+    "estado": "inactivo",
+    "ultimoAcceso": "2024-11-20 16:30"
+  },
+  {
+    "id": 6,
+    "nombre": "Roberto Sánchez",
+    "email": "roberto.sanchez@agrobio.com",
+    "rol": "gerente",
+    "estado": "activo",
+    "ultimoAcceso": "2024-12-09 08:00"
+  }
+]
