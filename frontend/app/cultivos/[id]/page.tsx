@@ -5,19 +5,16 @@ import { useParams } from 'next/navigation';
 import { Card, Button, Tag } from '@/components/ui';
 import Link from 'next/link';
 
-const API_URL = '/api/cultivos.json';
+const API_URL = 'http://localhost:8000/api/cultivos';
 
 export default function CultivoDetallePage() {
   const { id } = useParams();
   const [cultivo, setCultivo] = useState<any>(null);
 
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/${id}`)
       .then(res => res.json())
-      .then(data => {
-        const encontrado = data.find((c: any) => c.id === Number(id));
-        setCultivo(encontrado);
-      });
+      .then(setCultivo);
   }, [id]);
 
   if (!cultivo) {
@@ -37,10 +34,11 @@ export default function CultivoDetallePage() {
       <Tag>{cultivo.estado}</Tag>
 
       <Card>
-        <p><strong>Variedad:</strong> {cultivo.variedad}</p>
-        <p><strong>Área:</strong> {cultivo.area} {cultivo.unidad}</p>
-        <p><strong>Progreso:</strong> {cultivo.progreso}%</p>
-        <p><strong>Fecha siembra:</strong> {cultivo.fechaSiembra}</p>
+        <p><strong>Tipo:</strong> {cultivo.tipo}</p>
+        <p><strong>Área sembrada:</strong> {cultivo.area_sembrada}</p>
+        <p><strong>Fecha siembra:</strong> {cultivo.fecha_siembra}</p>
+        <p><strong>Fecha cosecha estimada:</strong> {cultivo.fecha_cosecha_estimada}</p>
+        <p><strong>Notas:</strong> {cultivo.notas}</p>
       </Card>
     </div>
   );
