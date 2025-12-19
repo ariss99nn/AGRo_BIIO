@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de URLs</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .methods {
+            color: #2196F3;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>URLs del Proyecto</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Patrón URL</th>
+                <th>Nombre</th>
+                <th>Vista</th>
+                <th>Métodos HTTP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for url in urls %}
+            <tr>
+                <td><code>{{ url.pattern }}</code></td>
+                <td>{{ url.name|default:"-" }}</td>
+                <td>{{ url.view }}</td>
+                <td class="methods">
+                    {% for method in url.methods %}
+                        <span>{{ method }}</span>
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

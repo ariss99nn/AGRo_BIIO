@@ -1,0 +1,211 @@
+<!-- templates/catalogos/dashboard.html -->
+{% extends 'catalogos/base.html' %}
+
+{% block title %}Dashboard - Catálogo AgroBio{% endblock %}
+
+{% block icon %}bi-speedometer2{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block page_subtitle %}Resumen general del sistema{% endblock %}
+
+{% block content %}
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-card-1">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-apple display-6"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="mb-1">Productos</h6>
+                    <h3 class="mb-0">{{ total_productos }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card stat-card-2">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-box-seam display-6"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="mb-1">Insumos</h6>
+                    <h3 class="mb-0">{{ total_insumos }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card stat-card-3">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-exclamation-triangle display-6"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="mb-1">Bajo Stock</h6>
+                    <h3 class="mb-0">{{ insumos_bajo_stock }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card stat-card-4">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <i class="bi bi-clipboard-data display-6"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="mb-1">Consumos</h6>
+                    <h3 class="mb-0">{{ total_consumos }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido en dos columnas -->
+<div class="row">
+    <!-- Insumos que necesitan atención -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    Insumos que Necesitan Atención
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if insumos_urgentes %}
+                <div class="list-group list-group-flush">
+                    {% for insumo in insumos_urgentes %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ insumo.nombre }}</h6>
+                            <small class="text-muted">{{ insumo.tipo|default:"Sin tipo" }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{% if insumo.stock == 0 %}danger{% else %}warning{% endif %} me-2">
+                                Stock: {{ insumo.stock }}
+                            </span>
+                            <a href="{% url 'insumo_detail' insumo.id %}" class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                    <p class="text-muted">Todos los insumos tienen stock suficiente</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{% url 'insumo_list' %}?stock=bajo" class="btn btn-sm btn-warning">
+                    <i class="bi bi-eye me-1"></i> Ver todos los bajos en stock
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Últimas actividades -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history text-info me-2"></i>
+                    Últimas Actividades
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for actividad in ultimas_actividades %}
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-light p-2">
+                                <i class="bi bi-{{ actividad.icono }} text-{{ actividad.color }}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">{{ actividad.titulo }}</h6>
+                            <small class="text-muted">{{ actividad.fecha|timesince }} atrás</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox text-muted display-4 mb-3"></i>
+                        <p class="text-muted">No hay actividades recientes</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{% url 'consumo_list' %}" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-list-ul me-1"></i> Ver todos los consumos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning-fill text-primary me-2"></i>
+                    Accesos Rápidos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{% url 'producto_create' %}" class="card card-hover text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-plus-circle display-5 text-primary mb-3"></i>
+                                <h6>Nuevo Producto</h6>
+                                <small class="text-muted">Agregar nuevo cultivo</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'insumo_create' %}" class="card card-hover text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-plus-circle display-5 text-success mb-3"></i>
+                                <h6>Nuevo Insumo</h6>
+                                <small class="text-muted">Agregar nuevo insumo</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'tasa_list' %}" class="card card-hover text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calculator display-5 text-info mb-3"></i>
+                                <h6>Configurar Tasas</h6>
+                                <small class="text-muted">Gestionar consumos</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'reporte_stock' %}" class="card card-hover text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-bar-chart display-5 text-warning mb-3"></i>
+                                <h6>Ver Reportes</h6>
+                                <small class="text-muted">Analizar inventario</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
