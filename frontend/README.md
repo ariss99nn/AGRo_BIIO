@@ -1,25 +1,61 @@
-# AGRO_BIO - Frontend
+🌐 AGRO_BIIO – Frontend
 
-Frontend del sistema AGRO_BIO desarrollado con:
+Interfaz web del sistema AGRO_BIIO desarrollada con Next.js + TypeScript + Tailwind CSS, encargada de consumir la API del backend y presentar la información al usuario de forma moderna, rápida y escalable.
 
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- ESLint
+🚀 Tecnologías Utilizadas
 
-## Estructura del Proyecto
+✅ Next.js (App Router)
 
-- `app/` → Rutas principales y layouts
-- `components/` → Componentes reutilizables
-- `features/` → Módulos por área del sistema
-- `lib/` → Funciones de API, auth y helpers
-- `styles/` → Estilos globales
-- `public/` → Imágenes y assets
-- `.env.example` → Variables de entorno de ejemplo
+✅ TypeScript
 
-## Scripts
+✅ Tailwind CSS
 
-```bash
+✅ ESLint
+
+✅ Consumo de API REST con fetch / axios
+
+✅ Arquitectura por módulos (features)
+
+🏗 Estructura del Proyecto
+frontend/
+├── app/              → Rutas principales, layouts y páginas
+├── components/       → Componentes reutilizables
+├── features/         → Módulos por funcionalidad (auth, usuarios, etc.)
+├── lib/              → Funciones auxiliares, API, auth, helpers
+├── public/           → Imágenes y assets
+├── styles/           → Estilos globales
+├── .env.example      → Variables de entorno de ejemplo
+├── package.json      → Dependencias y scripts
+└── README.md         → Documentación del frontend
+
+⚙️ Instalación del Frontend
+1️⃣ Entrar a la carpeta
+cd frontend
+
+2️⃣ Instalar dependencias
+npm install
+
+
+⚠️ Esto crea automáticamente la carpeta node_modules,
+nunca se sube al repositorio.
+
+3️⃣ Configurar variables de entorno
+
+Crear archivo:
+
+.env.local
+
+
+Basado en:
+
+.env.example
+
+
+Ejemplo:
+
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+4️⃣ Ejecutar en desarrollo
 npm run dev
 npm run build
 npm run start
