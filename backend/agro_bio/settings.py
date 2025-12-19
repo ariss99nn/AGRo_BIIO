@@ -54,7 +54,10 @@ SIMPLE_JWT = {
 
 
 
-
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS":
+    ["django_filters.rest_framework.DjangoFilterBackend"],
+}
 
 
 # Application definition
@@ -67,6 +70,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework', # Django REST Framework
+    'django_extensions', # Django Extensions
+    'django_filters', # Django Filters
     'alertas', # App de alertas
     'catalogo', # App de catálogo
     'cultivos', # App de cultivos
@@ -97,10 +102,11 @@ ROOT_URLCONF = 'agro_bio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [],  # O agrega aquí la ruta si tienes templates globales
+        'APP_DIRS': True,  # Esto debe estar en True
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
