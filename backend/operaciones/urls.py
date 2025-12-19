@@ -7,8 +7,8 @@ from operaciones.views import (
 )
 
 urlpatterns = [
-    path("consumos/", ConsumoListCreateAPIView.as_view()),
-    path("consumos/<int:pk>/", ConsumoDetailAPIView.as_view()),
-    path("consumos/<int:pk>/ejecutar/", EjecutarConsumoAPIView.as_view()),
-    path("monitoreos/", MonitoreoListCreateAPIView.as_view()),
+    path("operacion/consumos/", ConsumoListCreateAPIView.as_view()),
+    path("operacion/consumos/<int:pk>/", ConsumoDetailAPIView.as_view()),
+    path("operacion/consumos/<int:pk>/ejecutar/", EjecutarConsumoAPIView.as_view()),
+    path("operacion/monitoreos/", MonitoreoListCreateAPIView.as_view()),
 ]
